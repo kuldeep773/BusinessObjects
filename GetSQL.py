@@ -18,7 +18,6 @@ class Boparse():
     def q_result(self, document_list, header, hostname):
         url_doc='https://'+hostname+'/biprws/raylight/v1/documents'
         url_data='https://'+hostname+'/biprws/raylight/v1/documents'
-        
 
         result = []
         final_result = []
@@ -38,15 +37,27 @@ class Boparse():
                                 final_result.append('ID: '+i1['id'])
                                 final_result.append('Name: '+i1['name'])
                                 final_result.append('DataSourceTyep: '+i1['dataSourceType'])
-                                q1 = (requests.get('https://'+hostname+'/biprws/raylight/v1/documents/'+i+'/dataproviders/'+i1['id']+'/queryplan',headers=headers1))
-                                
-                                temp_data = ast.literal_eval(q1.text)
-                                for c,d in temp_data.items():
-                                    if c == 'queryplan':
-                                        for e, f in d.items():
-                                            if e == 'statement':
-                                                t2 = f['$']
-                                                res.append('SQL '+i1['id']+' : '+t2)
+                                if i1['dataSourceType'] == 'fhsql':
+                                    q11 = (requests.get('https://'+hostname+'/biprws/raylight/v1/documents/'+i+'/dataproviders/'+i1['id'],headers=headers1))
+                                    temp_data2 = ast.literal_eval(q11.text)
+                                    for g,h in temp_data2.items():
+                                        if g == 'dataprovider':
+                                            for m,n in h.items():
+                                                if m == 'properties':
+                                                    for o,p in n.items():
+                                                        for z in p:
+                                                            if z['@key'] == 'sql':
+                                                                # print(z['$'])
+                                                                res.append('SQL '+i1['id']+' : '+z['$'])
+                                else:
+                                    q1 = (requests.get('https://'+hostname+'/biprws/raylight/v1/documents/'+i+'/dataproviders/'+i1['id']+'/queryplan',headers=headers1))                                
+                                    temp_data = ast.literal_eval(q1.text)
+                                    for c,d in temp_data.items():
+                                        if c == 'queryplan':
+                                            for e, f in d.items():
+                                                if e == 'statement':
+                                                    t2 = f['$']
+                                                    res.append('SQL '+i1['id']+' : '+t2)
                                                 
                                                 
                             final_result.append(res)            
@@ -97,7 +108,6 @@ class Boparse():
             temp_counter +=1
 
 
-        
         self.q_result(id, self.headers, host)
 
         if resp.status_code == 200:
